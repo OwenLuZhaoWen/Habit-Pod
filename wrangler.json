@@ -1,5 +1,12 @@
 {
   "name": "habitpod-dashboard",
   "compatibility_date": "2024-03-20",
-  "pages_build_output_dir": "./dist"
+  "pages_build_output_dir": "./dist",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "habitpod",
+      "database_id": "81175aab-6cbc-4de0-bd23-2922668cdd0f"
+    }
+  ]
 }
