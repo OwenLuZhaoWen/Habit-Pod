@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Camera, RefreshCw, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/auth';
 
 // Initialize Gemini API
 // Note: In Vite, process.env is polyfilled in vite.config.ts for GEMINI_API_KEY
@@ -14,6 +14,7 @@ export default function AIScanner() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
   const startCamera = async () => {
     try {
@@ -86,7 +87,8 @@ export default function AIScanner() {
       const saveResponse = await fetch('/api/scans', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           name: parsedData.name,

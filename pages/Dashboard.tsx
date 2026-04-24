@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Device, DeviceStatus, PersonalityMode } from '../types';
-import { Battery, Wifi, AlertTriangle, User, Zap, Info, Clock, Activity } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { Battery, Wifi, AlertTriangle, User, Zap, Info, Clock, Activity, LogOut } from 'lucide-react';
+import { useAuth } from '../lib/auth';
 
+// ... (keep MOCK_DEVICES and DeviceCard unchanged)
 // Mock Data
 const MOCK_DEVICES: Device[] = [
   {
@@ -84,18 +85,27 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
 const RealtimeScans: React.FC = () => {
   const [scans, setScans] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
   useEffect(() => {
     // Fetch initial data
     const fetchScans = async () => {
       try {
-        const response = await fetch('/api/scans');
+        const response = await fetch('/api/scans', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const json = await response.json();
         if (json.data) {
           setScans(json.data);
+          setError(null);
+        } else if (json.error) {
+          setError(json.error);
         }
       } catch (err) {
         console.error('Error fetching scans:', err);
+        setError('Failed to fetch scans');
       }
     };
 
@@ -105,7 +115,7 @@ const RealtimeScans: React.FC = () => {
     const interval = setInterval(fetchScans, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   if (error) {
     return (
@@ -161,12 +171,23 @@ const RealtimeScans: React.FC = () => {
 };
 
 const Dashboard: React.FC = () => {
+  const { logout, user } = useAuth();
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-8 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Family Overview</h1>
           <p className="text-slate-500 mt-2">Monitoring 3 active HabitPod cores.</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-slate-600">{user?.email}</span>
+          <button 
+            onClick={logout}
+            className="flex items-center gap-2 bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
         </div>
       </header>
       

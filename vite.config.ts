@@ -13,16 +13,25 @@ if (!fs.existsSync(dbDir)) {
 const dbPath = path.resolve(dbDir, 'local_d1.sqlite');
 const sqlite = new Database(dbPath);
 
-// Initialize table
+// Initialize tables
 sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS scanned_items (
     id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
     name TEXT,
     calories INTEGER,
     health_score INTEGER,
     description TEXT,
     image_b64 TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
   );
 `);
 
