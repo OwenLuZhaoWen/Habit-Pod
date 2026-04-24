@@ -37,6 +37,10 @@ app.get('/health', (c) => {
 
 app.post('/auth/register', async (c) => {
   try {
+    if (!c.env.DB) {
+      return c.json({ error: 'Database binding (DB) is not configured or requires a redeployment to take effect.' }, 500);
+    }
+    
     const { email, password } = await c.req.json();
     if (!email || !password) return c.json({ error: 'Email and password required' }, 400);
 
@@ -61,6 +65,9 @@ app.post('/auth/register', async (c) => {
 
 app.post('/auth/login', async (c) => {
   try {
+    if (!c.env.DB) {
+      return c.json({ error: 'Database binding (DB) is not configured or requires a redeployment.' }, 500);
+    }
     const { email, password } = await c.req.json();
     const { results } = await c.env.DB.prepare('SELECT id, email, password_hash FROM users WHERE email = ?').bind(email).all();
     
@@ -84,6 +91,7 @@ app.post('/auth/login', async (c) => {
 
 app.get('/scans', jwtMiddleware, async (c) => {
   try {
+    if (!c.env.DB) return c.json({ data: [], error: 'Database binding missing' }, 500);
     const userId = c.get('user_id');
     const { results } = await c.env.DB.prepare(
       'SELECT * FROM scanned_items WHERE user_id = ? ORDER BY created_at DESC LIMIT 10'
@@ -97,7 +105,9 @@ app.get('/scans', jwtMiddleware, async (c) => {
 
 app.post('/scans', jwtMiddleware, async (c) => {
   try {
+    if (!c.env.DB) return c.json({ success: false, error: 'Database binding missing' }, 500);
     const userId = c.get('user_id');
+
     const body = await c.req.json();
     
     await c.env.DB.prepare(
