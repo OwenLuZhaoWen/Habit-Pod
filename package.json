@@ -6,11 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:setup": "wrangler d1 create habitpod_db",
+    "db:migrate": "wrangler d1 execute habitpod_db --local --file=./schema.sql && wrangler d1 execute habitpod_db --remote --file=./schema.sql",
+    "deploy": "npm run build && wrangler pages deploy"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20260424.1",
     "@google/genai": "^1.38.0",
+    "@hono/vite-dev-server": "^0.25.3",
     "@supabase/supabase-js": "^2.101.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.9.0",
+    "hono": "^4.12.15",
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

@@ -86,40 +86,25 @@ const RealtimeScans: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
-      setError('Supabase 未配置，无法加载实时数据。');
-      return;
-    }
-
     // Fetch initial data
     const fetchScans = async () => {
-      const { data, error } = await supabase
-        .from('scanned_items')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (error) {
-        console.error('Error fetching scans:', error);
-      } else {
-        setScans(data || []);
+      try {
+        const response = await fetch('/api/scans');
+        const json = await response.json();
+        if (json.data) {
+          setScans(json.data);
+        }
+      } catch (err) {
+        console.error('Error fetching scans:', err);
       }
     };
 
     fetchScans();
 
-    // Subscribe to real-time changes
-    const subscription = supabase
-      .channel('scanned_items_changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scanned_items' }, payload => {
-        console.log('New scan received!', payload.new);
-        setScans(current => [payload.new, ...current].slice(0, 5));
-      })
-      .subscribe();
+    // Poll for changes
+    const interval = setInterval(fetchScans, 5000);
 
-    return () => {
-      supabase.removeChannel(subscription);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   if (error) {

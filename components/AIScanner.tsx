@@ -82,24 +82,24 @@ export default function AIScanner() {
       const parsedData = JSON.parse(resultText);
       setScanResult(parsedData);
 
-      // 2. Save to Supabase
-      if (!import.meta.env.VITE_SUPABASE_URL) {
-        throw new Error('Supabase 未配置，仅显示识别结果。');
+      // 2. Save using our Cloudflare worker API
+      const saveResponse = await fetch('/api/scans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: parsedData.name,
+          calories: parsedData.calories,
+          health_score: parsedData.healthScore,
+          description: parsedData.description,
+          image_b64: base64Image
+        })
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error('Failed to save to database.');
       }
-
-      const { error: dbError } = await supabase
-        .from('scanned_items')
-        .insert([
-          {
-            name: parsedData.name,
-            calories: parsedData.calories,
-            health_score: parsedData.healthScore,
-            description: parsedData.description,
-            image_b64: base64Image // Optional: save image if needed, but might be large
-          }
-        ]);
-
-      if (dbError) throw dbError;
 
     } catch (err: any) {
       console.error('Analysis/DB error:', err);
