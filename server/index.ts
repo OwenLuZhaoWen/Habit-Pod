@@ -4,13 +4,13 @@ export interface Env {
   DB: D1Database;
 }
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env }>().basePath('/api');
 
-app.get('/api/health', (c) => {
+app.get('/health', (c) => {
   return c.json({ status: 'ok' });
 });
 
-app.get('/api/scans', async (c) => {
+app.get('/scans', async (c) => {
   try {
     const { results } = await c.env.DB.prepare(
       'SELECT * FROM scanned_items ORDER BY created_at DESC LIMIT 5'
@@ -22,7 +22,7 @@ app.get('/api/scans', async (c) => {
   }
 });
 
-app.post('/api/scans', async (c) => {
+app.post('/scans', async (c) => {
   try {
     const body = await c.req.json();
     
