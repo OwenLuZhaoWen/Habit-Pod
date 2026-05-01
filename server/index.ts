@@ -28,7 +28,7 @@ const jwtMiddleware = async (c: any, next: any) => {
   }
   const token = authHeader.split(' ')[1];
   try {
-    const payload = await verify(token, c.env.JWT_SECRET || 'fallback_secret_must_change');
+    const payload = await verify(token, c.env.JWT_SECRET || 'fallback_secret_must_change', 'HS256');
     c.set('user_id', payload.user_id);
     await next();
   } catch (e) {
@@ -61,7 +61,7 @@ app.post('/auth/register', async (c) => {
       'INSERT INTO users (id, email, password_hash) VALUES (?1, ?2, ?3)'
     ).bind(userId, email, passwordHash).run();
 
-    const token = await sign({ user_id: userId, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 }, c.env.JWT_SECRET || 'fallback_secret_must_change');
+    const token = await sign({ user_id: userId, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 }, c.env.JWT_SECRET || 'fallback_secret_must_change', 'HS256');
     return c.json({ token, user: { id: userId, email } });
   } catch (err: any) {
     return c.json({ error: err.message }, 500);
@@ -87,7 +87,7 @@ app.post('/auth/login', async (c) => {
       return c.json({ error: 'Invalid email or password' }, 401);
     }
 
-    const token = await sign({ user_id: user.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 }, c.env.JWT_SECRET || 'fallback_secret_must_change');
+    const token = await sign({ user_id: user.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 }, c.env.JWT_SECRET || 'fallback_secret_must_change', 'HS256');
     return c.json({ token, user: { id: user.id, email: user.email } });
   } catch (err: any) {
     return c.json({ error: err.message }, 500);

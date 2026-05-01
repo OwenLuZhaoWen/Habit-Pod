@@ -112,7 +112,8 @@ export default defineConfig(({ mode }) => {
             GOOGLE_API_KEY: env.GOOGLE_API_KEY || env.GEMINI_API_KEY,
             OPENAI_API_KEY: env.OPENAI_API_KEY,
             OPENAI_BASE_URL: env.OPENAI_BASE_URL,
-            OPENAI_MODEL: env.OPENAI_MODEL
+            OPENAI_MODEL: env.OPENAI_MODEL,
+            JWT_SECRET: env.JWT_SECRET
           }
         })
       ],
