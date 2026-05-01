@@ -6,6 +6,9 @@ export interface Env {
   DB: D1Database;
   JWT_SECRET?: string;
   GOOGLE_API_KEY?: string;
+  OPENAI_API_KEY?: string;
+  OPENAI_BASE_URL?: string;
+  OPENAI_MODEL?: string;
 }
 
 const app = new Hono<{ Bindings: Env; Variables: { user_id: string } }>().basePath('/api');
@@ -93,38 +96,89 @@ app.post('/auth/login', async (c) => {
 
 app.post('/analyze', jwtMiddleware, async (c) => {
   try {
-    if (!c.env.GOOGLE_API_KEY) {
-      return c.json({ error: 'GOOGLE_API_KEY is not configured in environment variables' }, 500);
-    }
     const { image_b64 } = await c.req.json();
     if (!image_b64) return c.json({ error: 'Missing image data' }, 400);
 
-    const ai = new GoogleGenAI({ apiKey: c.env.GOOGLE_API_KEY });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                data: image_b64,
-                mimeType: 'image/jpeg'
-              }
-            },
-            {
-              text: "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice)."
-            }
-          ]
-        }
-      ],
-      config: {
-        responseMimeType: 'application/json',
-      }
-    });
+    const useOpenAI = !!c.env.OPENAI_API_KEY;
+    const prompt = "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice).";
+    
+    let parsedData;
 
-    const resultText = response.text || '{}';
-    const parsedData = JSON.parse(resultText);
+    if (useOpenAI) {
+      const baseUrl = c.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+      const model = c.env.OPENAI_MODEL || 'gpt-4o';
+      
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${c.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: prompt },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${image_b64}`
+                  }
+                }
+              ]
+            }
+          ],
+          response_format: { type: 'json_object' }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+      }
+
+      const responseData: any = await response.json();
+      let content = responseData.choices?.[0]?.message?.content || '{}';
+      
+      if (content.startsWith('```json')) {
+        content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (content.startsWith('```')) {
+        content = content.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+
+      parsedData = JSON.parse(content);
+    } else if (c.env.GOOGLE_API_KEY) {
+      const ai = new GoogleGenAI({ apiKey: c.env.GOOGLE_API_KEY });
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-pro-preview',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  data: image_b64,
+                  mimeType: 'image/jpeg'
+                }
+              },
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        config: {
+          responseMimeType: 'application/json',
+        }
+      });
+
+      const resultText = response.text || '{}';
+      parsedData = JSON.parse(resultText);
+    } else {
+      return c.json({ error: 'LLM API keys (OPENAI_API_KEY or GOOGLE_API_KEY) are not configured' }, 500);
+    }
 
     return c.json(parsedData);
   } catch (err: any) {
