@@ -20,14 +20,17 @@ export default function AIScanner() {
         video: { facingMode: 'environment' } 
       });
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
     } catch (err: any) {
       setError(t('Camera error'));
       console.error('Camera error:', err);
     }
   };
+
+  React.useEffect(() => {
+    if (stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
 
   const stopCamera = useCallback(() => {
     if (stream) {
