@@ -39,11 +39,17 @@ export default function AIScanner() {
   const captureAndAnalyze = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
+    const video = videoRef.current;
+    
+    if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+      setError(t('Camera is not ready yet, please wait.'));
+      return;
+    }
+
     setIsScanning(true);
     setError(null);
     setScanResult(null);
 
-    const video = videoRef.current;
     const canvas = canvasRef.current;
     
     // Set canvas dimensions to match video
@@ -52,11 +58,22 @@ export default function AIScanner() {
     
     // Draw video frame to canvas
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      setError(t('Failed to capture image context.'));
+      setIsScanning(false);
+      return;
+    }
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     // Get base64 image data (remove the data:image/jpeg;base64, prefix for Gemini)
-    const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    const base64Image = dataUrl.split(',')[1];
+    
+    if (!base64Image) {
+      setError(t('Failed to get video frame, please try again.'));
+      setIsScanning(false);
+      return;
+    }
 
     try {
       // 1. Send to server for analysis
@@ -151,7 +168,7 @@ export default function AIScanner() {
             {isScanning && (
               <div className="absolute inset-0 bg-indigo-900/40 backdrop-blur-sm flex flex-col items-center justify-center">
                 <RefreshCw className="w-10 h-10 text-white animate-spin mb-3" />
-                <p className="text-white font-medium">{t('Gemini is analyzing')}</p>
+                <p className="text-white font-medium">{t('AI is analyzing')}</p>
               </div>
             )}
           </>

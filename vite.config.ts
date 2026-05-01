@@ -109,11 +109,11 @@ export default defineConfig(({ mode }) => {
           injectClientScript: false,
           env: {
             DB: mockD1Database,
-            GOOGLE_API_KEY: env.GOOGLE_API_KEY || env.GEMINI_API_KEY,
-            OPENAI_API_KEY: env.OPENAI_API_KEY,
-            OPENAI_BASE_URL: env.OPENAI_BASE_URL,
-            OPENAI_MODEL: env.OPENAI_MODEL,
-            JWT_SECRET: env.JWT_SECRET
+            GOOGLE_API_KEY: env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY || env.GEMINI_API_KEY || process.env.GEMINI_API_KEY,
+            OPENAI_API_KEY: env.OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+            OPENAI_BASE_URL: env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL,
+            OPENAI_MODEL: env.OPENAI_MODEL || process.env.OPENAI_MODEL,
+            JWT_SECRET: env.JWT_SECRET || process.env.JWT_SECRET
           }
         })
       ],

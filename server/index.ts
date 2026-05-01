@@ -101,14 +101,15 @@ app.post('/analyze', jwtMiddleware, async (c) => {
 
     const openAiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
     const useOpenAI = !!openAiKey;
+    const baseUrl = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+    const model = c.env.OPENAI_MODEL || process.env.OPENAI_MODEL || 'gpt-4o';
+
     const prompt = "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice).";
     
     let parsedData;
-    console.log('Using OpenAI:', useOpenAI, 'BaseUrl:', c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL, 'Model:', c.env.OPENAI_MODEL || process.env.OPENAI_MODEL);
+    console.log('Using OpenAI:', useOpenAI, 'BaseUrl:', baseUrl, 'Model:', model);
 
     if (useOpenAI) {
-      const baseUrl = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-      const model = c.env.OPENAI_MODEL || process.env.OPENAI_MODEL || 'gpt-4o';
       
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
