@@ -99,20 +99,22 @@ app.post('/analyze', jwtMiddleware, async (c) => {
     const { image_b64 } = await c.req.json();
     if (!image_b64) return c.json({ error: 'Missing image data' }, 400);
 
-    const useOpenAI = !!c.env.OPENAI_API_KEY;
+    const openAiKey = c.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+    const useOpenAI = !!openAiKey;
     const prompt = "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice).";
     
     let parsedData;
+    console.log('Using OpenAI:', useOpenAI, 'BaseUrl:', c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL, 'Model:', c.env.OPENAI_MODEL || process.env.OPENAI_MODEL);
 
     if (useOpenAI) {
-      const baseUrl = c.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-      const model = c.env.OPENAI_MODEL || 'gpt-4o';
+      const baseUrl = c.env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+      const model = c.env.OPENAI_MODEL || process.env.OPENAI_MODEL || 'gpt-4o';
       
       const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${c.env.OPENAI_API_KEY}`
+          'Authorization': `Bearer ${openAiKey}`
         },
         body: JSON.stringify({
           model: model,
@@ -149,8 +151,9 @@ app.post('/analyze', jwtMiddleware, async (c) => {
       }
 
       parsedData = JSON.parse(content);
-    } else if (c.env.GOOGLE_API_KEY) {
-      const ai = new GoogleGenAI({ apiKey: c.env.GOOGLE_API_KEY });
+    } else if (c.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY) {
+      const googleApiKey = c.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY;
+      const ai = new GoogleGenAI({ apiKey: googleApiKey as string });
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
         contents: [
