@@ -1,12 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Camera, RefreshCw, UploadCloud, CheckCircle2 } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from 'react-i18next';
-
-// Initialize Gemini API
-// Note: In Vite, process.env is polyfilled in vite.config.ts for GEMINI_API_KEY
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
 export default function AIScanner() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -64,25 +59,24 @@ export default function AIScanner() {
     const base64Image = canvas.toDataURL('image/jpeg').split(',')[1];
 
     try {
-      // 1. Send to Gemini for analysis
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-preview',
-        contents: [
-          {
-            inlineData: {
-              data: base64Image,
-              mimeType: 'image/jpeg'
-            }
-          },
-          "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice)."
-        ],
-        config: {
-          responseMimeType: 'application/json',
-        }
+      // 1. Send to server for analysis
+      const analysisResponse = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          image_b64: base64Image
+        })
       });
 
-      const resultText = response.text || '{}';
-      const parsedData = JSON.parse(resultText);
+      if (!analysisResponse.ok) {
+        const errData = await analysisResponse.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to analyze image.');
+      }
+
+      const parsedData = await analysisResponse.json();
       setScanResult(parsedData);
 
       // 2. Save using our Cloudflare worker API

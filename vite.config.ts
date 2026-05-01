@@ -108,7 +108,8 @@ export default defineConfig(({ mode }) => {
           ],
           injectClientScript: false,
           env: {
-            DB: mockD1Database
+            DB: mockD1Database,
+            GOOGLE_API_KEY: env.GOOGLE_API_KEY || env.GEMINI_API_KEY
           }
         })
       ],

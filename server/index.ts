@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { sign, verify } from 'hono/jwt';
+import { GoogleGenAI } from '@google/genai';
 
 export interface Env {
   DB: D1Database;
   JWT_SECRET?: string;
+  GOOGLE_API_KEY?: string;
 }
 
 const app = new Hono<{ Bindings: Env; Variables: { user_id: string } }>().basePath('/api');
@@ -85,6 +87,48 @@ app.post('/auth/login', async (c) => {
     const token = await sign({ user_id: user.id, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 }, c.env.JWT_SECRET || 'fallback_secret_must_change');
     return c.json({ token, user: { id: user.id, email: user.email } });
   } catch (err: any) {
+    return c.json({ error: err.message }, 500);
+  }
+});
+
+app.post('/analyze', jwtMiddleware, async (c) => {
+  try {
+    if (!c.env.GOOGLE_API_KEY) {
+      return c.json({ error: 'GOOGLE_API_KEY is not configured in environment variables' }, 500);
+    }
+    const { image_b64 } = await c.req.json();
+    if (!image_b64) return c.json({ error: 'Missing image data' }, 400);
+
+    const ai = new GoogleGenAI({ apiKey: c.env.GOOGLE_API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-pro-preview',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                data: image_b64,
+                mimeType: 'image/jpeg'
+              }
+            },
+            {
+              text: "Analyze this image. Identify the food or object. Return ONLY a valid JSON object with the following keys: 'name' (string, name of the item), 'calories' (number, estimated calories, use 0 if not food), 'healthScore' (number 1-10, 10 being healthiest), 'description' (string, brief description or health advice)."
+            }
+          ]
+        }
+      ],
+      config: {
+        responseMimeType: 'application/json',
+      }
+    });
+
+    const resultText = response.text || '{}';
+    const parsedData = JSON.parse(resultText);
+
+    return c.json(parsedData);
+  } catch (err: any) {
+    console.error('Analysis error:', err);
     return c.json({ error: err.message }, 500);
   }
 });
