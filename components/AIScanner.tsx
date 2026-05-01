@@ -163,6 +163,9 @@ export default function AIScanner() {
               autoPlay 
               playsInline 
               muted
+              onLoadedMetadata={() => {
+                videoRef.current?.play().catch(console.error);
+              }}
               className="w-full h-full object-cover"
             />
             <canvas ref={canvasRef} className="hidden" />

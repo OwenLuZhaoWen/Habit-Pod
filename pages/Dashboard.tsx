@@ -50,15 +50,15 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
                 <Zap size={20} />
             </div>
             <div>
-                <h3 className="font-semibold text-slate-800">{device.name}</h3>
-                <p className="text-sm text-slate-500">{device.owner} • {device.currentPersona}</p>
+                <h3 className="font-semibold text-slate-800">{t(device.name)}</h3>
+                <p className="text-sm text-slate-500">{t(device.owner)} • {t(device.currentPersona)}</p>
             </div>
         </div>
         <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${
             isOnline ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'
         }`}>
             {isOnline ? <Wifi size={12} /> : <AlertTriangle size={12} />}
-            <span>{device.status}</span>
+            <span>{t(device.status)}</span>
         </div>
       </div>
 

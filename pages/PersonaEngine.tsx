@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PersonalityMode, RagDocument } from '../types';
 import { simulatePersonaResponse } from '../services/geminiService';
 import { Upload, FileText, Trash2, PlayCircle, MessageSquare } from 'lucide-react';
 
 const PersonaEngine: React.FC = () => {
+  const { t } = useTranslation();
   const [activePersona, setActivePersona] = useState<PersonalityMode>(PersonalityMode.STRICT_COACH);
   const [documents, setDocuments] = useState<RagDocument[]>([
     { id: '1', name: 'Diabetic_Guidelines_v2.pdf', type: 'Medical', uploadDate: '2023-10-24' },
@@ -46,7 +48,7 @@ const PersonaEngine: React.FC = () => {
       <div className="space-y-8">
         {/* Personality Selector */}
         <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Personality Model</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-4">{t('Personality Model')}</h2>
           <div className="grid grid-cols-1 gap-4">
             {Object.values(PersonalityMode).map((mode) => (
               <div 
@@ -61,9 +63,9 @@ const PersonaEngine: React.FC = () => {
                 <div>
                   <h3 className={`font-semibold ${activePersona === mode ? 'text-indigo-700' : 'text-slate-700'}`}>{mode}</h3>
                   <p className="text-sm text-slate-500">
-                    {mode === PersonalityMode.STRICT_COACH && "Direct, demanding, discipline-focused."}
-                    {mode === PersonalityMode.GENTLE_PARTNER && "Supportive, soft-spoken, 'we' language."}
-                    {mode === PersonalityMode.ANIME_CHUUNI && "Fantasy metaphors, energetic, dramatic."}
+                    {mode === PersonalityMode.STRICT_COACH && t("Direct, demanding, discipline-focused.")}
+                    {mode === PersonalityMode.GENTLE_PARTNER && t("Supportive, soft-spoken, 'we' language.")}
+                    {mode === PersonalityMode.ANIME_CHUUNI && t("Fantasy metaphors, energetic, dramatic.")}
                   </p>
                 </div>
                 <div className={`w-4 h-4 rounded-full border-2 ${
@@ -77,10 +79,10 @@ const PersonaEngine: React.FC = () => {
         {/* RAG Knowledge Base */}
         <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex justify-between items-center mb-4">
-                 <h2 className="text-xl font-bold text-slate-900">Knowledge Base (RAG)</h2>
+                 <h2 className="text-xl font-bold text-slate-900">{t('Knowledge Base (RAG)')}</h2>
                  <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors">
                     <Upload size={16} />
-                    <span>Upload Doc</span>
+                    <span>{t('Upload Doc')}</span>
                     <input type="file" className="hidden" onChange={handleFileUpload} />
                  </label>
             </div>
@@ -106,7 +108,7 @@ const PersonaEngine: React.FC = () => {
                     </div>
                 ))}
                 {documents.length === 0 && (
-                    <p className="text-center text-slate-400 text-sm py-4">No documents uploaded. AI relies on general knowledge.</p>
+                    <p className="text-center text-slate-400 text-sm py-4">{t('No documents uploaded. AI relies on general knowledge.')}</p>
                 )}
             </div>
         </section>
@@ -121,20 +123,20 @@ const PersonaEngine: React.FC = () => {
                 <PlayCircle size={24} className="text-white" />
             </div>
             <div>
-                <h2 className="text-xl font-bold">Simulator</h2>
-                <p className="text-indigo-200 text-sm">Test personality & RAG response</p>
+                <h2 className="text-xl font-bold">{t('Simulator')}</h2>
+                <p className="text-indigo-200 text-sm">{t('Test personality & RAG response')}</p>
             </div>
          </div>
 
          <div className="flex-1 space-y-6 relative z-10">
              <div>
-                 <label className="text-sm text-indigo-300 font-medium uppercase tracking-wider mb-2 block">User Action</label>
+                 <label className="text-sm text-indigo-300 font-medium uppercase tracking-wider mb-2 block">{t('User Action')}</label>
                  <input 
                     type="text" 
                     value={simAction}
                     onChange={(e) => setSimAction(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-4 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Describe what the user is doing..."
+                    placeholder={t("Describe what the user is doing...")}
                  />
              </div>
 
@@ -143,19 +145,19 @@ const PersonaEngine: React.FC = () => {
                 disabled={isLoadingSim}
                 className="w-full py-3 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 rounded-xl font-semibold shadow-lg shadow-indigo-900/50 transition-all"
              >
-                {isLoadingSim ? 'Processing Logic...' : 'Test Response'}
+                {isLoadingSim ? t('Processing Logic...') : t('Test Response')}
              </button>
 
              <div className="border-t border-slate-700 pt-6">
                  <label className="text-sm text-indigo-300 font-medium uppercase tracking-wider mb-2 block flex items-center gap-2">
                     <MessageSquare size={16} />
-                    AI Response
+                    {t('AI Response')}
                  </label>
                  <div className="bg-slate-800/50 rounded-xl p-6 min-h-[160px] border border-slate-700 font-mono text-sm leading-relaxed relative">
                     {simResponse ? (
                         <p className="typing-effect">{simResponse}</p>
                     ) : (
-                        <p className="text-slate-500 italic">Waiting for input simulation...</p>
+                        <p className="text-slate-500 italic">{t('Waiting for input simulation...')}</p>
                     )}
                     {isLoadingSim && (
                         <div className="absolute inset-0 flex items-center justify-center bg-slate-800/80 backdrop-blur-sm rounded-xl">

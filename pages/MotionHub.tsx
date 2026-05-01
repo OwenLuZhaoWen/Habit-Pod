@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MotionGame } from '../types';
 import { Gamepad2, Trophy, Eye, Activity } from 'lucide-react';
 
 const MotionHub: React.FC = () => {
+  const { t } = useTranslation();
   const [games, setGames] = useState<MotionGame[]>([
     {
       id: 'g1',
-      title: 'Neck Defender',
-      description: 'Defend against monsters by tilting your head. Reduces neck strain.',
+      title: t('Neck Defender'),
+      description: t('Defend against monsters by tilting your head. Reduces neck strain.'),
       isActive: true,
       type: 'Neck'
     },
     {
       id: 'g2',
-      title: 'Squat for Snacks',
-      description: 'Unlock the snack cabinet only after performing 10 perfect squats.',
+      title: t('Squat for Snacks'),
+      description: t('Unlock the snack cabinet only after performing 10 perfect squats.'),
       isActive: false,
       type: 'Squat'
     },
     {
       id: 'g3',
-      title: 'Focus Hand',
-      description: 'Fast-paced hand gesture tracking to wake up your brain.',
+      title: t('Focus Hand'),
+      description: t('Fast-paced hand gesture tracking to wake up your brain.'),
       isActive: false,
       type: 'Focus'
     }
@@ -38,10 +40,10 @@ const MotionHub: React.FC = () => {
        <header className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
            <Gamepad2 className="text-indigo-600" />
-           Motion Interaction Hub
+           {t('Motion Interaction Hub')}
         </h1>
         <p className="text-slate-500 mt-2">
-          Configure the "Snack Tax" and desktop fitness games.
+          {t('Configure the "Snack Tax" and desktop fitness games.')}
         </p>
       </header>
 
@@ -79,10 +81,10 @@ const MotionHub: React.FC = () => {
 
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                            {game.isActive ? 'Active Mode' : 'Disabled'}
+                            {game.isActive ? t('Active Mode') : t('Disabled')}
                         </span>
                         <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                            Configure Rules
+                            {t('Configure Rules')}
                         </button>
                     </div>
                 </div>
@@ -92,12 +94,12 @@ const MotionHub: React.FC = () => {
 
       <div className="mt-12 bg-indigo-900 rounded-3xl p-8 text-center text-white relative overflow-hidden">
             <div className="relative z-10 max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold mb-4">Developer API Available</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('Developer API Available')}</h2>
                 <p className="text-indigo-200 mb-6">
-                    Want to build your own desktop motion games? HabitPod opens its camera posture recognition API to community developers.
+                    {t('Want to build your own desktop motion games? HabitPod opens its camera posture recognition API to community developers.')}
                 </p>
                 <button className="bg-white text-indigo-900 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors">
-                    View API Documentation
+                    {t('View API Documentation')}
                 </button>
             </div>
             {/* Decorative circles */}
