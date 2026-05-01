@@ -142,6 +142,7 @@ export default function AIScanner() {
               ref={videoRef} 
               autoPlay 
               playsInline 
+              muted
               className="w-full h-full object-cover"
             />
             <canvas ref={canvasRef} className="hidden" />
