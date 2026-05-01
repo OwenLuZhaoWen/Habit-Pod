@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import { Camera, RefreshCw, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from 'react-i18next';
 
 // Initialize Gemini API
 // Note: In Vite, process.env is polyfilled in vite.config.ts for GEMINI_API_KEY
@@ -15,6 +16,7 @@ export default function AIScanner() {
   const [scanResult, setScanResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
+  const { t } = useTranslation();
 
   const startCamera = async () => {
     try {
@@ -27,7 +29,7 @@ export default function AIScanner() {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (err: any) {
-      setError('无法访问摄像头，请确保已授予权限。');
+      setError(t('Camera error'));
       console.error('Camera error:', err);
     }
   };
@@ -105,7 +107,7 @@ export default function AIScanner() {
 
     } catch (err: any) {
       console.error('Analysis/DB error:', err);
-      setError(err.message || '识别或保存失败，请重试。');
+      setError(err.message || t('Recognition failed'));
     } finally {
       setIsScanning(false);
     }
@@ -115,19 +117,19 @@ export default function AIScanner() {
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col items-center">
       <h2 className="text-xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
         <Camera className="w-5 h-5 text-indigo-500" />
-        AI 智能视觉扫描
+        {t('AI Vision Scanner')}
       </h2>
 
       <div className="relative w-full max-w-md aspect-[4/3] bg-slate-900 rounded-xl overflow-hidden mb-6 flex items-center justify-center">
         {!stream ? (
           <div className="text-center p-6">
             <Camera className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-            <p className="text-slate-400 text-sm mb-4">开启摄像头以识别食物或物品</p>
+            <p className="text-slate-400 text-sm mb-4">{t('Turn on camera to detect')}</p>
             <button 
               onClick={startCamera}
               className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              开启摄像头
+              {t('Turn on Camera')}
             </button>
           </div>
         ) : (
@@ -144,7 +146,7 @@ export default function AIScanner() {
             {isScanning && (
               <div className="absolute inset-0 bg-indigo-900/40 backdrop-blur-sm flex flex-col items-center justify-center">
                 <RefreshCw className="w-10 h-10 text-white animate-spin mb-3" />
-                <p className="text-white font-medium">Gemini 正在分析中...</p>
+                <p className="text-white font-medium">{t('Gemini is analyzing')}</p>
               </div>
             )}
           </>
@@ -157,14 +159,14 @@ export default function AIScanner() {
             onClick={stopCamera}
             className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
           >
-            关闭
+            {t('Close')}
           </button>
           <button 
             onClick={captureAndAnalyze}
             disabled={isScanning}
             className="flex-[2] py-3 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 shadow-sm shadow-indigo-200"
           >
-            {isScanning ? '处理中...' : '拍照并分析'}
+            {isScanning ? t('Processing') : t('Capture and Analyze')}
           </button>
         </div>
       )}
@@ -183,18 +185,18 @@ export default function AIScanner() {
               {scanResult.name}
             </h3>
             <span className="px-2.5 py-1 bg-emerald-200 text-emerald-800 text-xs font-bold rounded-full">
-              健康分: {scanResult.healthScore}/10
+              {t('Health Score')} {scanResult.healthScore}/10
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-3">
             <div className="bg-white p-3 rounded-lg border border-emerald-100">
-              <p className="text-xs text-slate-500 mb-1">预估热量</p>
+              <p className="text-xs text-slate-500 mb-1">{t('Estimated Calories')}</p>
               <p className="text-lg font-bold text-slate-800">{scanResult.calories} <span className="text-sm font-normal text-slate-500">kcal</span></p>
             </div>
             <div className="bg-white p-3 rounded-lg border border-emerald-100 flex items-center justify-center">
                <p className="text-sm text-emerald-600 font-medium flex items-center gap-1">
                  <UploadCloud className="w-4 h-4" />
-                 已同步至云端
+                 {t('Synced to cloud')}
                </p>
             </div>
           </div>

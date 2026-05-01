@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Device, DeviceStatus, PersonalityMode } from '../types';
 import { Battery, Wifi, AlertTriangle, User, Zap, Info, Clock, Activity, LogOut } from 'lucide-react';
 import { useAuth } from '../lib/auth';
+import { useTranslation, Trans } from 'react-i18next';
 
 // ... (keep MOCK_DEVICES and DeviceCard unchanged)
 // Mock Data
@@ -36,6 +37,7 @@ const MOCK_DEVICES: Device[] = [
 ];
 
 const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
+  const { t } = useTranslation();
   const isOnline = device.status === DeviceStatus.ONLINE;
 
   return (
@@ -62,11 +64,11 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-slate-50 p-3 rounded-xl">
-            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">Calories</p>
+            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">{t('Calories')}</p>
             <p className="text-xl font-bold text-slate-700">{device.stats.caloriesToday}</p>
         </div>
         <div className="bg-slate-50 p-3 rounded-xl">
-            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">Blocked</p>
+            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">{t('Blocked')}</p>
             <p className="text-xl font-bold text-slate-700">{device.stats.snacksIntercepted}</p>
         </div>
       </div>
@@ -76,7 +78,7 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
             <Battery size={16} className={device.batteryLevel < 20 ? 'text-red-500' : 'text-slate-400'} />
             <span className={device.batteryLevel < 20 ? 'text-red-500 font-bold' : ''}>{device.batteryLevel}%</span>
         </div>
-        <button className="text-indigo-600 hover:text-indigo-800 font-medium">Manage</button>
+        <button className="text-indigo-600 hover:text-indigo-800 font-medium">{t('Manage')}</button>
       </div>
     </div>
   );
@@ -86,6 +88,7 @@ const RealtimeScans: React.FC = () => {
   const [scans, setScans] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Fetch initial data
@@ -130,18 +133,18 @@ const RealtimeScans: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <Activity className="w-5 h-5 text-indigo-500" />
-          实时 AI 扫描记录
+          {t('Live AI Scans')}
         </h3>
         <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live
+          {t('Live')}
         </span>
       </div>
 
       {scans.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 text-slate-400">
           <Clock className="w-8 h-8 mb-2 opacity-50" />
-          <p className="text-sm">暂无扫描记录</p>
+          <p className="text-sm">{t('No scan records')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -159,7 +162,7 @@ const RealtimeScans: React.FC = () => {
                 </div>
                 <p className="text-sm text-slate-600 truncate">{scan.description}</p>
                 <div className="mt-2 text-xs font-medium text-slate-500">
-                  预估热量: <span className="text-slate-700">{scan.calories} kcal</span>
+                  {t('Estimated Calories')} <span className="text-slate-700">{scan.calories} kcal</span>
                 </div>
               </div>
             </div>
@@ -172,12 +175,13 @@ const RealtimeScans: React.FC = () => {
 
 const Dashboard: React.FC = () => {
   const { logout, user } = useAuth();
+  const { t } = useTranslation();
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-8 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Family Overview</h1>
-          <p className="text-slate-500 mt-2">Monitoring 3 active HabitPod cores.</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t('Family Overview')}</h1>
+          <p className="text-slate-500 mt-2">{t('Monitoring', { count: 3 })}</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-slate-600">{user?.email}</span>
@@ -186,7 +190,7 @@ const Dashboard: React.FC = () => {
             className="flex items-center gap-2 bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors"
           >
             <LogOut size={16} />
-            Logout
+            {t('Logout')}
           </button>
         </div>
       </header>
@@ -197,11 +201,13 @@ const Dashboard: React.FC = () => {
             <Info size={24} />
         </div>
         <div>
-            <h2 className="text-lg font-bold text-slate-800 mb-2">About HabitPod</h2>
+            <h2 className="text-lg font-bold text-slate-800 mb-2">{t('About HabitPod')}</h2>
             <p className="text-slate-600 leading-relaxed text-sm">
-                HabitPod is an innovative ecosystem combining <strong>AIGC, IoT Hardware, Art Toys, and Digital Health</strong>. 
-                We transform the snacking experience by allowing users to generate custom 3D shells (AIGC), engage with 
-                distinct AI personalities (Persona Engine), and unlock treats through physical activity (Motion-to-Earn).
+                <Trans i18nKey="About Desc">
+                  HabitPod is an innovative ecosystem combining <strong>AIGC, IoT Hardware, Art Toys, and Digital Health</strong>. 
+                  We transform the snacking experience by allowing users to generate custom 3D shells (AIGC), engage with 
+                  distinct AI personalities (Persona Engine), and unlock treats through physical activity (Motion-to-Earn).
+                </Trans>
             </p>
         </div>
       </div>
@@ -209,24 +215,24 @@ const Dashboard: React.FC = () => {
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-200">
-            <p className="text-indigo-100 font-medium mb-1">Total Snacks Avoided</p>
+            <p className="text-indigo-100 font-medium mb-1">{t('Total Snacks Avoided')}</p>
             <h2 className="text-4xl font-bold">42</h2>
-            <p className="text-sm text-indigo-200 mt-2">↑ 12% from last week</p>
+            <p className="text-sm text-indigo-200 mt-2">↑ 12% {t('from last week')}</p>
         </div>
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <p className="text-slate-500 font-medium mb-1">Active Time (Today)</p>
+            <p className="text-slate-500 font-medium mb-1">{t('Active Time (Today)')}</p>
             <h2 className="text-4xl font-bold text-slate-800">5.2h</h2>
-            <p className="text-sm text-green-600 mt-2">Excellent posture detected</p>
+            <p className="text-sm text-green-600 mt-2">{t('Excellent posture detected')}</p>
         </div>
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-             <p className="text-slate-500 font-medium mb-1">Top Active User</p>
+             <p className="text-slate-500 font-medium mb-1">{t('Top Active User')}</p>
              <div className="flex items-center space-x-3 mt-1">
                 <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
                     <User size={20} />
                 </div>
                 <div>
                     <h2 className="text-xl font-bold text-slate-800">Tommy</h2>
-                    <p className="text-xs text-slate-400">Strict Coach Mode</p>
+                    <p className="text-xs text-slate-400">{t('Strict Coach Mode')}</p>
                 </div>
              </div>
         </div>
@@ -234,7 +240,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold text-slate-800 mb-6">Device Status</h2>
+          <h2 className="text-xl font-bold text-slate-800 mb-6">{t('Device Status')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {MOCK_DEVICES.map(device => (
                 <DeviceCard key={device.id} device={device} />
@@ -244,7 +250,7 @@ const Dashboard: React.FC = () => {
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
                     <span className="text-2xl font-light">+</span>
                 </div>
-                <p className="font-medium">Bind New Core</p>
+                <p className="font-medium">{t('Bind New Core')}</p>
             </div>
           </div>
         </div>
