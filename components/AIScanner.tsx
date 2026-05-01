@@ -10,7 +10,7 @@ export default function AIScanner() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const { t } = useTranslation();
 
   const startCamera = async () => {
@@ -71,6 +71,11 @@ export default function AIScanner() {
         })
       });
 
+      if (analysisResponse.status === 401) {
+        logout();
+        throw new Error('Session expired, please login again.');
+      }
+
       if (!analysisResponse.ok) {
         const errData = await analysisResponse.json().catch(() => ({}));
         throw new Error(errData.error || 'Failed to analyze image.');
@@ -94,6 +99,11 @@ export default function AIScanner() {
           image_b64: base64Image
         })
       });
+
+      if (saveResponse.status === 401) {
+        logout();
+        throw new Error('Session expired, please login again.');
+      }
 
       if (!saveResponse.ok) {
         throw new Error('Failed to save to database.');

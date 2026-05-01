@@ -84,29 +84,33 @@ const DeviceCard: React.FC<{ device: Device }> = ({ device }) => {
   );
 };
 
-const RealtimeScans: React.FC = () => {
-  const [scans, setScans] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const { token } = useAuth();
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    // Fetch initial data
-    const fetchScans = async () => {
-      try {
-        const response = await fetch('/api/scans', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+  const RealtimeScans: React.FC = () => {
+    const [scans, setScans] = useState<any[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const { token, logout } = useAuth();
+    const { t } = useTranslation();
+  
+    useEffect(() => {
+      // Fetch initial data
+      const fetchScans = async () => {
+        try {
+          const response = await fetch('/api/scans', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.status === 401) {
+            logout();
+            return;
           }
-        });
-        const json = await response.json();
-        if (json.data) {
-          setScans(json.data);
-          setError(null);
-        } else if (json.error) {
-          setError(json.error);
-        }
-      } catch (err) {
+          const json = await response.json();
+          if (json.data) {
+            setScans(json.data);
+            setError(null);
+          } else if (json.error) {
+            setError(json.error);
+          }
+        } catch (err) {
         console.error('Error fetching scans:', err);
         setError('Failed to fetch scans');
       }
